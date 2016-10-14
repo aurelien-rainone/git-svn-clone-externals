@@ -59,10 +59,14 @@ def logged_call(func, log=logger.debug):
         cwd = os.getcwd()
         command = " ".join(args)
         log("{cwd}$ {color}{command}{end_color}".format(**locals()))
-        res = func(args, **kwargs)
-        if res and func is subprocess.call:
-            color = col.RED
-            logger.error("{cwd}$ {color}{command}{end_color}".format(**locals()))
+        try:
+            res = func(args, **kwargs)
+        except subprocess.CalledProcessError as e:
+            res = e.returncode
+        finally:
+            if res and func is subprocess.call:
+                color = col.RED
+                logger.error("{cwd}$ {color}{command}{end_color}".format(**locals()))
         return res
     return _logged
 
